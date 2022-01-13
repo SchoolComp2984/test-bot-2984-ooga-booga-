@@ -1,8 +1,13 @@
+import wpilib
+
 class RotaryJoystick():
-    def rotary_inputs(self, robot):
-        x=robot.drive_stick.getX()
-        y=robot.drive_stick.getY()
-        z=robot.drive_stick.getZ()
+    def __init__(self, _rotary_joystick : wpilib.Joystick):
+        self.rotary_joystick = _rotary_joystick
+
+    def rotary_inputs(self):
+        x= self.rotary_joystick.getX()
+        y= self.rotary_joystick.getY()
+        z= self.rotary_joystick.getZ()
         MAX=max(x, y, z)
         MIN=min(x, y, z)
         if((x<=y) and (y<=z)):
