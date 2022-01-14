@@ -1,11 +1,12 @@
+from re import X
 from ctre import WPI_TalonSRX, PigeonIMU
 import math
-from utils import PID
+from utils import pid
 
 # parameter : type
 class Drive:
    #CONTRUCTOR
-   def __init__(self, _frontLeft : WPI_TalonSRX, _backLeft : WPI_TalonSRX, _frontRight : WPI_TalonSRX, _backRight : WPI_TalonSRX, _drive_imu : PigeonIMU, _pid : PID):
+   def __init__(self, _frontLeft : WPI_TalonSRX, _backLeft : WPI_TalonSRX, _frontRight : WPI_TalonSRX, _backRight : WPI_TalonSRX, _drive_imu : PigeonIMU, _pid : pid):
       self.frontLeft = _frontLeft
       self.backLeft = _backLeft
 
@@ -43,6 +44,13 @@ class Drive:
       left_speed = y + x
       right_speed = y - x
       self.setSpeed(left_speed, right_speed)
+
+   def TankDrive(self, right_y, left_y):
+      left_speed = left_y / 2
+      right_speed = right_y / 2
+      self.setSpeed(left_speed, right_speed)
+
+      
 
    def absoluteDrive(self, speed, desired_angle):
       # speed is a float value from -1 to 1
