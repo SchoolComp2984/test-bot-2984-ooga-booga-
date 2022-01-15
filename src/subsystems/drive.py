@@ -1,4 +1,3 @@
-from re import X
 from ctre import WPI_TalonSRX, PigeonIMU
 import math
 from utils import pid
