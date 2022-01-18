@@ -64,7 +64,6 @@ class Drive:
       left_speed -= steer / 12
       right_speed += steer / 12
         #self._drive.DifferentialDrive(left, right)
-        #Ask Greg how to drive
       # self._drive.arcadeDrive(left,steer)
       # Use PID or something in this next step idk
       self.setSpeed(left_speed, right_speed)
