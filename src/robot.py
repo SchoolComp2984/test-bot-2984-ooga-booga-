@@ -35,53 +35,43 @@ class MyRobot(wpilib.TimedRobot):
       # Might change to XBOX controller depending on it working or not.
       self.rotary_joystick = wpilib.Joystick(1)
       self.rotary_controller = rotary_joystick.RotaryJoystick(self.rotary_joystick)
+      self.rotary_buttons = wpilib.interfaces.GenericHID(ID.OPERATOR_CONTROLLER)
       self.operator_controller = wpilib.XboxController(ID.OPERATOR_CONTROLLER)
       self.drive_controller = wpilib.XboxController(ID.DRIVE_CONTROLLER)
       #subsystems: These combine multiple components into a coordinated system.
       self._drive = drive.Drive(self.frontLeft, self.backLeft, self.frontRight, self.backRight, self.drive_imu, self.pid)
       self._shooter = shooter.Shooter(self.shooterMotor)
       #commands: These utilize subsystems to perform autonomous routines.
+      self._shoot = shoot.Shoot(self._drive, self._shooter)
    def teleopInit(self):
       self.frontLeft.setInverted(True)
       self.backLeft.setInverted(True)
       self.frontRight.setInverted(False)
       self.backRight.setInverted(False)
+      self.rotary_controller.reset_angle(self._drive.getYaw())
       
    def teleopPeriodic(self):
-      #if self.printTimer.hasPeriodPassed(0.5):
-         #print(sd.getNumber('robotTime'))
       try:
+         
+         # if self.printTimer.hasPeriodPassed(0.5):
+         #    print(self._shooter.getCameraInfo())
+         
+         if self.rotary_buttons.getRawButton(1):    
+            # also check if shooter has balls before aiming so we can stop the shooter from running when we finish shooting.
+            self._shoot.execute()
+            self.rotary_controller.reset_angle(self._shoot.target_angle)
+         else:
+            angle = self.rotary_controller.rotary_inputs()
+            speed = math_functions.interp(self.drive_controller.getY(self.HAND_RIGHT))
+            self._drive.absoluteDrive(speed, angle)
+
          #right_y = self.drive_controller.getY(self.HAND_RIGHT)
          #left_y = self.drive_controller.getY(self.HAND_LEFT)
          #self._drive.TankDrive(right_y,left_y)
-         #if a button is pressed then run shoot command 
-         #elif b button is pressed then run intake command 
-         # else no buttons pressed run default command
-         if self.operator_controller.getAButton():
-            shoot.main(self._drive, self._shooter)
 
-         elif self.operator_controller.getBButton():
-            pass
-         else:
-            pass
-
-         
-         if self.printTimer.hasPeriodPassed(0.5):
-            print(self._shooter.getCameraInfo())
-
-         # if self.drive_controller.getAButtonPressed():
-         #    self.absolute_drive = not self.absolute_drive
-         #    print(self.absolute_drive)
-
-         # if self.absolute_drive == True:
-         #    angle = math.atan2(self.drive_controller.)
-         #    # angle = self.rotary_controller.rotary_inputs()
-         #    speed = math_functions.interp(self.drive_controller.getY(self.HAND_RIGHT))
-         #    self._drive.absoluteDrive(speed, angle)
-         # else:
-         #    x = self.drive_controller.getX(self.HAND_LEFT)
-         #    y = self.drive_controller.getY(self.HAND_LEFT)
-         #    self._drive.arcadeDrive(y, x)
+         #x = self.drive_controller.getX(self.HAND_LEFT)
+         #y = self.drive_controller.getY(self.HAND_LEFT)
+         #self._drive.arcadeDrive(y, x)
       except:
          raise
 

@@ -3,6 +3,7 @@ import wpilib
 class RotaryJoystick():
     def __init__(self, _rotary_joystick : wpilib.Joystick):
         self.rotary_joystick = _rotary_joystick
+        self.angleoffset = 0.0
 
     def rotary_inputs(self):
         x= self.rotary_joystick.getX()
@@ -29,4 +30,10 @@ class RotaryJoystick():
             mid=z
             angle=300+(mid-MIN)/(MAX-MIN)*60
         #print ("a=", angle)
+        angle = angle + self.angleoffset
         return angle
+    
+    def reset_angle(self,angle):
+        self.angleoffset = 0.0
+        self.angleoffset = angle - self.rotary_inputs()
+
