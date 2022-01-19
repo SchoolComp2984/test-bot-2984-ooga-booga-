@@ -9,8 +9,8 @@ class Shooter:
    def getCameraInfo(self):
       networkTableData = NetworkTables.getTable("limelight")
       tv = networkTableData.getNumber("tv", None) # valid targets (1 or 0)
-      tx = networkTableData.getNumber("tx", None) # horizontal offset
-      ty = networkTableData.getNumber("ty", None) # vertical offset
+      tx = networkTableData.getNumber("tx", None) # horizontal offset (-27 to 27 degrees)
+      ty = networkTableData.getNumber("ty", None) # vertical offset (-20.5 to 20.5 degrees)
       ta = networkTableData.getNumber("ta", None) # % of screen covered by target
       data = [tv, tx, ty, (ta * 100)]
       return data

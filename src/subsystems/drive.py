@@ -49,8 +49,6 @@ class Drive:
       right_speed = right_y / 2
       self.setSpeed(left_speed, right_speed)
 
-      
-
    def absoluteDrive(self, speed, desired_angle):
       # speed is a float value from -1 to 1
       cur_rotation = self.getYaw()
