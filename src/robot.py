@@ -18,7 +18,8 @@ class MyRobot(wpilib.TimedRobot):
       self.absolute_drive = False
 
       self.pid = pid.PID()
-      self.pid.set_pid(0.4, 0.001, 3.2, 0)
+      # 0.4, 0.001, 3.2, 0
+      self.pid.set_pid(0.4, 0.001, 2, 0)
       #components: These are classes representing all the electrical sensors and actuators on the robot.
       self.frontLeft = ctre.WPI_TalonSRX(ID.DRIVE_LEFT_FRONT)
       self.backLeft = ctre.WPI_TalonSRX(ID.DRIVE_LEFT_BACK)
@@ -55,16 +56,19 @@ class MyRobot(wpilib.TimedRobot):
          
          # if self.printTimer.hasPeriodPassed(0.5):
          #    print(self._shooter.getCameraInfo())
-         
+         if self._shooter.hasTarget():
+            delta_angle = self._shooter.getCameraInfo()[1]
+            self.target_angle = self._drive.getYaw() - delta_angle
+
          if self.rotary_buttons.getRawButton(1):    
             # also check if shooter has balls before aiming so we can stop the shooter from running when we finish shooting.
             self._shoot.execute()
             self.rotary_controller.reset_angle(self._shoot.target_angle)
          else:
             angle = self.rotary_controller.rotary_inputs()
-            speed = math_functions.interp(self.drive_controller.getY(self.HAND_RIGHT))
-            self._drive.absoluteDrive(speed, angle)
-
+            speed = math_functions.interp(self.rotary_controller.getTwist())
+            self._drive.absoluteDrive(-speed, angle)
+            #print ("%d",self.rotary_controller.getTwist())
          #right_y = self.drive_controller.getY(self.HAND_RIGHT)
          #left_y = self.drive_controller.getY(self.HAND_LEFT)
          #self._drive.TankDrive(right_y,left_y)

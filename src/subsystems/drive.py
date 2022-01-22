@@ -57,8 +57,8 @@ class Drive:
       delta_angle = ((delta_angle + 180) % 360) - 180
         # PID steering power limited between -12 and 12
       steer = max(-12, min(12, self.pid.steer_pid(delta_angle)))
-      left_speed = speed / 120
-      right_speed = speed / 120
+      left_speed = speed / 12
+      right_speed = speed / 12
       left_speed -= steer / 12
       right_speed += steer / 12
         #self._drive.DifferentialDrive(left, right)

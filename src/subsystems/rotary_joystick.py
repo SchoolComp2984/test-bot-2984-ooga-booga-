@@ -4,7 +4,13 @@ class RotaryJoystick():
     def __init__(self, _rotary_joystick : wpilib.Joystick):
         self.rotary_joystick = _rotary_joystick
         self.angleoffset = 0.0
-
+        self.rotary_joystick.setTwistChannel(4)
+    
+    #Gets Y of joystick
+    def getTwist(self):
+        return self.rotary_joystick.getTwist()
+    
+    #AB encoder which returns angle
     def rotary_inputs(self):
         x= self.rotary_joystick.getX()
         y= self.rotary_joystick.getY()
@@ -29,10 +35,10 @@ class RotaryJoystick():
         if((x<=z) and (z<=y)):
             mid=z
             angle=300+(mid-MIN)/(MAX-MIN)*60
-        #print ("a=", angle)
         angle = angle + self.angleoffset
         return angle
     
+    #Sets the rotary joystick to the angle of the IMU
     def reset_angle(self,angle):
         self.angleoffset = 0.0
         self.angleoffset = angle - self.rotary_inputs()
