@@ -1,11 +1,11 @@
 from ctre import WPI_TalonSRX, PigeonIMU
 import math
-from utils import pid
+from utils import pid, Imutil
 
 # parameter : type
 class Drive:
    #CONTRUCTOR
-   def __init__(self, _frontLeft : WPI_TalonSRX, _backLeft : WPI_TalonSRX, _frontRight : WPI_TalonSRX, _backRight : WPI_TalonSRX, _drive_imu : PigeonIMU, _pid : pid):
+   def __init__(self, _frontLeft : WPI_TalonSRX, _backLeft : WPI_TalonSRX, _frontRight : WPI_TalonSRX, _backRight : WPI_TalonSRX, _drive_imu : Imutil, _pid : pid):
       self.frontLeft = _frontLeft
       self.backLeft = _backLeft
 
@@ -14,6 +14,7 @@ class Drive:
       
       self.drive_imu = _drive_imu
       self.pid = _pid
+
    #HELPER FUNCTIONS
    def setRightSpeed(self, speed):
       # speed is a float value from -1 to 1
@@ -31,13 +32,6 @@ class Drive:
       self.setLeftSpeed(left)
       self.setRightSpeed(right)
 
-   def getRotation(self):
-        # Get the yaw from the IMU
-        return self.drive_imu.getYawPitchRoll()[1]
-
-   def getYaw(self):
-        return self.getRotation()[0]
-
    #DRIVE FUNCTIONS
    def arcadeDrive(self, y, x):
       left_speed = y + x
@@ -51,9 +45,9 @@ class Drive:
 
    def absoluteDrive(self, speed, desired_angle):
       # speed is a float value from -1 to 1
-      cur_rotation = self.getYaw()
+      cur_rotation = self.drive_imu.getYaw()
         # finds angle difference (delta angle) in range -180 to 180
-      delta_angle = desired_angle - cur_rotation # self.drive_imu.getAbsoluteCompassHeading()
+      delta_angle = desired_angle - cur_rotation
       delta_angle = ((delta_angle + 180) % 360) - 180
         # PID steering power limited between -12 and 12
       steer = max(-12, min(12, self.pid.steer_pid(delta_angle)))
@@ -65,5 +59,15 @@ class Drive:
       # self._drive.arcadeDrive(left,steer)
       # Use PID or something in this next step idk
       self.setSpeed(left_speed, right_speed)
-      # this function is NOT finished. It should be based on a two axis joystick determing rotation and one 
-      # joystick controlling the speed. The motors should rotate to the angle a two axis joystick points
+
+   def mecanumDrive(self, speed_y, speed_x, rotation):
+      
+      
+      self.brspeed = self.flspeed
+      self.blspeed = self.frspeed
+      self.frontLeft.set(self.flspeed)
+      self.frontright.set(self.frspeed)
+      self.backLeft.set(self.blspeed)
+      self.backRight.set(self.brspeed)
+
+   
