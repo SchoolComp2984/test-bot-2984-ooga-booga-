@@ -1,3 +1,4 @@
+from turtle import right
 import wpilib, ctre
 from commands import shoot
 from utils import ID, pid, math_functions, imutil
@@ -38,15 +39,16 @@ class MyRobot(wpilib.TimedRobot):
       self.drive_imu = imutil.Imutil(self.backRight)
 
       # Might change to XBOX controller depending on it working or not.
-      self.rotary_joystick = wpilib.Joystick(1)
-      self.rotary_controller = rotary_joystick.RotaryJoystick(self.rotary_joystick)
-      self.rotary_buttons = wpilib.interfaces.GenericHID(ID.OPERATOR_CONTROLLER)
-      self.operator_controller = wpilib.XboxController(ID.OPERATOR_CONTROLLER)
-      self.drive_controller = wpilib.XboxController(ID.DRIVE_CONTROLLER)
       self.HAND_LEFT = wpilib.interfaces.GenericHID.Hand.kLeftHand
       self.HAND_RIGHT = wpilib.interfaces.GenericHID.Hand.kRightHand
+      self.rotary_controller = rotary_joystick.RotaryJoystick(ID.OPERATOR_CONTROLLER)
+      self.operator_controller = wpilib.interfaces.GenericHID(ID.OPERATOR_CONTROLLER)
+      self.drive_controller = wpilib.XboxController(ID.DRIVE_CONTROLLER)
 
-      #subsystems: These combine multiple components into a coordinated system.
+      # xbox controller for drifting system
+      self.controller = wpilib.XboxController(1)
+
+      #subsystems: These combine multiple components into a coordinated system
       self._drive = drive.Drive(self.frontLeft, self.backLeft, self.frontRight, self.backRight, self.drive_imu, self.pid)
       self._shooter = shooter.Shooter(self.shooterMotor)
 
@@ -66,7 +68,7 @@ class MyRobot(wpilib.TimedRobot):
          # if self.printTimer.hasPeriodPassed(0.5):
          #    print(self._shooter.getCameraInfo())
 
-         # if self.rotary_buttons.getRawButton(1):
+         # if self.operator_controller.getRawButton(1):
          #    # also check if shooter has balls before aiming so we can stop the shooter from running when we finish shooting.
          #    self._shoot.execute()
          #    self.rotary_controller.reset_angle(self._shoot.target_angle)
@@ -75,13 +77,23 @@ class MyRobot(wpilib.TimedRobot):
          #    speed = math_functions.interp(self.rotary_controller.getTwist())
          #    self._drive.absoluteDrive(-speed, angle)
          
-         #Experimental Stuff by Kyle 2
-         self.servoangle = (self.drive_controller.getRightX() + 1) * 90
-         self.firstservo.setAngle(self.servoangle)
-         if self.rotary_buttons.getRawButton(2):
-            self.firstservo.setAngle(0)
-         if self.rotary_buttons.getRawButton(3):
-            self.firstservo.setAngle(180)
+         # get trigger axis from controller - brake returns value -1 to 0, gas returns value 0 to 1 
+         leftTrigger = -(self.controller.getLeftTriggerAxis()) # brake
+         rightTrigger = self.controller.getRightTriggerAxis() # gas
+         xAxis = self.controller.getLeftX() # left stick x axis for turning
+
+         if leftTrigger < 0 and rightTrigger > 0: # if brake and gas is pressed
+            combinedTriggers = leftTrigger + rightTrigger
+            self.drive.setDriftSpeeds(combinedTriggers, xAxis)
+            
+         elif leftTrigger < 0: # if brake is pressed
+            self.drive.setDriftSpeeds(leftTrigger, xAxis)
+
+         elif rightTrigger > 0: # if gas is pressed
+            self.drive.setDriftSpeeds(rightTrigger, xAxis)
+
+         else: # if neither one is pressed
+            self.drive.stop()
 
          # print(self.drive_controller.getLeftY)
          # print(self.drive_controller.getLeftX)

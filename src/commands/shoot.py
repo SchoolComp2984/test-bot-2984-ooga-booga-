@@ -12,19 +12,30 @@ class Shoot:
       self.shooter = _shooter
       self.target_angle = self.drive.getYaw() - 180
 
+   def move(self):
+       self.drive.absoluteDrive(0, self.target_angle)
+
+   def turning(self):
+      if self.shooter.hasTarget(): # check if robot has target
+         delta_angle = self.shooter.getCameraInfo()[1] # get angle of target
+         self.target_angle = self.drive.getYaw() - delta_angle
+         if abs(delta_angle) < 2: # if aim is accurate enough
+            self.state = self.SHOOTING # set state to shooting
+            print ("State is shooting")
+      self.move()
+
+   def shoot(self):
+      pass
+   
    def execute(self):
       if self.state == self.TURNING:
-         #Put a copy of this if in robot.py to have a starting angle for the first shoot
-         if self.shooter.hasTarget():
-            delta_angle = self.shooter.getCameraInfo()[1]
-            self.target_angle = self.drive.getYaw() - delta_angle
-            if abs(delta_angle) < 2:
-               self.state = self.SHOOTING
-               print ("State is shooting")
-         self.drive.absoluteDrive(0, self.target_angle)
-      elif self.state == self.SHOOTING:
+         self.turning()
+      
+      if self.state == self.SHOOTING: # if or elif
          #Code for shoot the ball
+         self.shoot()
          #if shooting is done:
          self.finish()
+
    def finish(self):
       self.state = self.TURNING
