@@ -1,11 +1,11 @@
 from ctre import WPI_TalonSRX, PigeonIMU
 import math
-from utils import pid, Imutil
+from utils import pid, imutil
 
 # parameter : type
 class Drive:
    #CONTRUCTOR
-   def __init__(self, _frontLeft : WPI_TalonSRX, _backLeft : WPI_TalonSRX, _frontRight : WPI_TalonSRX, _backRight : WPI_TalonSRX, _drive_imu : Imutil, _pid : pid):
+   def __init__(self, _frontLeft : WPI_TalonSRX, _backLeft : WPI_TalonSRX, _frontRight : WPI_TalonSRX, _backRight : WPI_TalonSRX, _drive_imu : imutil, _pid : pid):
       self.frontLeft = _frontLeft
       self.backLeft = _backLeft
 
@@ -60,14 +60,25 @@ class Drive:
       # Use PID or something in this next step idk
       self.setSpeed(left_speed, right_speed)
 
-   def mecanumDrive(self, speed_y, speed_x, rotation):
-      
-      
+   #Drive method for mecanum wheels
+   def mecanumDrive(self, joy_y, joy_x, desired_angle):
+      #Set power without turning
+      self.flspeed = joy_y + joy_x
+      self.frspeed = joy_y - joy_x
       self.brspeed = self.flspeed
       self.blspeed = self.frspeed
+      #Add turning
+      cur_rotation = self.drive_imu.getYaw()
+      delta_angle = desired_angle - cur_rotation
+      delta_angle = ((delta_angle + 180) % 360) - 180
+      steer = max(-1, min(1, self.pid.steer_pid(delta_angle)/12))
+      self.flspeed -= steer
+      self.frspeed += steer
+      self.blspeed -= steer
+      self.brspeed += steer
+      #Set speed for all wheels
       self.frontLeft.set(self.flspeed)
-      self.frontright.set(self.frspeed)
+      self.frontRight.set(self.frspeed)
       self.backLeft.set(self.blspeed)
       self.backRight.set(self.brspeed)
-
    
