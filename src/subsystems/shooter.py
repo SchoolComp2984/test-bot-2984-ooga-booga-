@@ -1,8 +1,8 @@
-from ctre import WPI_TalonSRX
+from ctre import WPI_TalonFX
 from networktables import NetworkTables
 
 class Shooter:
-   def __init__(self, _shooterMotor : WPI_TalonSRX):
+   def __init__(self, _shooterMotor : WPI_TalonFX):
       self.shooterMotor = _shooterMotor
    def setSpeed(self,speed):
       self.shooterMotor.set(speed)
