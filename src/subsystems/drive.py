@@ -1,5 +1,3 @@
-from dbm import _ValueType
-from re import X
 from ctre import WPI_TalonSRX, PigeonIMU
 import math
 from utils import pid, imutil
@@ -33,6 +31,9 @@ class Drive:
    def setSpeed(self, left, right):
       self.setLeftSpeed(left)
       self.setRightSpeed(right)
+
+   def getYaw(self):
+      return self.drive_imu.getYaw()
 
    #DRIVE FUNCTIONS
    def arcadeDrive(self, y, x):
@@ -84,21 +85,10 @@ class Drive:
       self.backLeft.set(self.blspeed)
       self.backRight.set(self.brspeed)
 
-   def getCombined(self, combined, x):
-      leftSpeed = combined
-      rightSpeed = combined
-
-      if x > 0:
-         rightSpeed += x
-      elif x < 0:
-         leftSpeed += x
-
-      return [leftSpeed, rightSpeed]
-
-   def setDriftSpeeds(self, combined, x):
-      speeds = self.getCombined(combined, x)
-      self.setSpeed(2 * speeds[0], 2 * speeds[1])
-
-   def stop(self):
-      self.setSpeed(0, 0)
+   def driftDrive(self, left, right, x):
+      speed = left + right
+      speed_left = speed - x
+      speed_right = speed + x
+      self.setLeftSpeed(speed_left)
+      self.setRightSpeed(speed_right)
    

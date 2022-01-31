@@ -1,22 +1,15 @@
-from turtle import right
-import wpilib, ctre
+import wpilib, ctre, rev
 from commands import shoot
 from utils import ID, pid, math_functions, imutil
 from subsystems import rotary_joystick, drive, shooter
 from networktables import NetworkTables
 import math
-import rev
 
 sd = NetworkTables.getTable('SmartDashboard')
 
 class MyRobot(wpilib.TimedRobot):
 
    def robotInit(self):
-      print("starting")
-
-      #Experimental Stuff by Kyle
-      self.servoangle = 90
-      self.firstservo = wpilib.Servo(0)
 
       self.pid = pid.PID()
       #Original PID constants: 0.4, 0.001, 3.2
@@ -26,7 +19,18 @@ class MyRobot(wpilib.TimedRobot):
       self.printTimer.start()
 
       #components: These are classes representing all the electrical sensors and actuators on the robot.
-
+      self.NOBALL = 0
+      self.BLUE = 1
+      self.RED = 2
+      self.alliance_color = self.RED
+      self.ball_color = self.NOBALL
+      self.driver_station = wpilib.DriverStation()
+      self.alliance = self.driver_station.getAlliance()
+      # To access what type of alliance it is: wpilib.DriverStation.Alliance.kBlue
+      if self.wpilib.DriverStation.Alliance.kBlue == self.alliance:
+         self.alliance_color = self.BLUE
+      else:
+         self.alliance_color = self.RED
       #self.frontLeft = rev.CANSparkMax(ID.DRIVE_LEFT_FRONT)
       self.frontLeft = ctre.WPI_TalonSRX(ID.DRIVE_LEFT_FRONT)
       self.backLeft = ctre.WPI_TalonSRX(ID.DRIVE_LEFT_BACK)
@@ -38,15 +42,14 @@ class MyRobot(wpilib.TimedRobot):
 
       self.drive_imu = imutil.Imutil(self.backRight)
 
+      self.color_sensor = rev.ColorSensorV3(0)
+
       # Might change to XBOX controller depending on it working or not.
       self.HAND_LEFT = wpilib.interfaces.GenericHID.Hand.kLeftHand
       self.HAND_RIGHT = wpilib.interfaces.GenericHID.Hand.kRightHand
       self.rotary_controller = rotary_joystick.RotaryJoystick(ID.OPERATOR_CONTROLLER)
       self.operator_controller = wpilib.interfaces.GenericHID(ID.OPERATOR_CONTROLLER)
       self.drive_controller = wpilib.XboxController(ID.DRIVE_CONTROLLER)
-
-      # xbox controller for drifting system
-      self.controller = wpilib.XboxController(1)
 
       #subsystems: These combine multiple components into a coordinated system
       self._drive = drive.Drive(self.frontLeft, self.backLeft, self.frontRight, self.backRight, self.drive_imu, self.pid)
@@ -56,6 +59,7 @@ class MyRobot(wpilib.TimedRobot):
       self._shoot = shoot.Shoot(self._drive, self._shooter)
 
    def teleopInit(self):
+      print(self.driver_station.getAlliance())
       self.frontLeft.setInverted(True)
       self.backLeft.setInverted(True)
       self.frontRight.setInverted(False)
@@ -64,7 +68,18 @@ class MyRobot(wpilib.TimedRobot):
       
    def teleopPeriodic(self):
       try:
-         
+         if self.color_sensor.getIR():
+            if self.color_sensor.getColor()[0] < self.color_sensor.getColor()[2]:
+               self.ball_color = self.BLUE
+            else:
+               self.ball_color = self.RED
+            if self.ball_color == self.alliance_color:
+               print("shoot")
+            else: 
+               print("discard")
+         else:
+            self.ball_color = self.NOBALL
+
          # if self.printTimer.hasPeriodPassed(0.5):
          #    print(self._shooter.getCameraInfo())
 
@@ -78,33 +93,12 @@ class MyRobot(wpilib.TimedRobot):
          #    self._drive.absoluteDrive(-speed, angle)
          
          # get trigger axis from controller - brake returns value -1 to 0, gas returns value 0 to 1 
-         leftTrigger = -(self.controller.getLeftTriggerAxis()) # brake
-         rightTrigger = self.controller.getRightTriggerAxis() # gas
-         xAxis = self.controller.getLeftX() # left stick x axis for turning
+         # leftTrigger = -(self.drive_controller.getTriggerAxis(self.HAND_LEFT)) # brake
+         # rightTrigger = self.drive_controller.getTriggerAxis(self.HAND_RIGHT) # gas
+         # xAxis = self.drive_controller.getX(self.HAND_LEFT) # left stick x axis for turning
+         # self._drive.driftDrive(leftTrigger, rightTrigger, xAxis)
 
-         if leftTrigger < 0 and rightTrigger > 0: # if brake and gas is pressed
-            combinedTriggers = leftTrigger + rightTrigger
-            self.drive.setDriftSpeeds(combinedTriggers, xAxis)
-            
-         elif leftTrigger < 0: # if brake is pressed
-            self.drive.setDriftSpeeds(leftTrigger, xAxis)
 
-         elif rightTrigger > 0: # if gas is pressed
-            self.drive.setDriftSpeeds(rightTrigger, xAxis)
-
-         else: # if neither one is pressed
-            self.drive.stop()
-
-         # print(self.drive_controller.getLeftY)
-         # print(self.drive_controller.getLeftX)
-         # print(self.drive_controller.getLeftY + self.drive_controller.getLeftX)
-         #right_y = self.drive_controller.getY(self.HAND_RIGHT)
-         #left_y = self.drive_controller.getY(self.HAND_LEFT)
-         #self._drive.TankDrive(right_y,left_y)
-         #x = self.drive_controller.getX(self.HAND_LEFT)
-         #y = self.drive_controller.getY(self.HAND_LEFT)
-         #self._drive.arcadeDrive(y, x)
-         #self._drive.mecanumDrive()
       except:
          raise
 
