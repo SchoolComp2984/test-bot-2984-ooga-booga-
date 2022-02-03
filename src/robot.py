@@ -18,19 +18,20 @@ class MyRobot(wpilib.TimedRobot):
       self.printTimer = wpilib.Timer()
       self.printTimer.start()
 
+      # self.NOBALL = 0
+      # self.BLUE = 1
+      # self.RED = 2
+      # self.alliance_color = self.RED
+      # self.ball_color = self.NOBALL
+      # self.driver_station = wpilib.DriverStation
+      # self.alliance = self.driver_station.getAlliance()
+      # # To access what type of alliance it is: wpilib.DriverStation.Alliance.kBlue
+      # if wpilib.DriverStation.Alliance.kBlue == self.alliance:
+      #    self.alliance_color = self.BLUE
+      # else:
+      #    self.alliance_color = self.RED
+
       #components: These are classes representing all the electrical sensors and actuators on the robot.
-      self.NOBALL = 0
-      self.BLUE = 1
-      self.RED = 2
-      self.alliance_color = self.RED
-      self.ball_color = self.NOBALL
-      self.driver_station = wpilib.DriverStation()
-      self.alliance = self.driver_station.getAlliance()
-      # To access what type of alliance it is: wpilib.DriverStation.Alliance.kBlue
-      if self.wpilib.DriverStation.Alliance.kBlue == self.alliance:
-         self.alliance_color = self.BLUE
-      else:
-         self.alliance_color = self.RED
       #self.frontLeft = rev.CANSparkMax(ID.DRIVE_LEFT_FRONT)
       self.frontLeft = ctre.WPI_TalonSRX(ID.DRIVE_LEFT_FRONT)
       self.backLeft = ctre.WPI_TalonSRX(ID.DRIVE_LEFT_BACK)
@@ -42,11 +43,10 @@ class MyRobot(wpilib.TimedRobot):
 
       self.drive_imu = imutil.Imutil(self.backRight)
 
-      self.color_sensor = rev.ColorSensorV3(0)
+      # self.color_sensor = rev.ColorSensorV3(wpilib.I2C.Port(0))
+      self.testServo = wpilib.Servo(0)
 
       # Might change to XBOX controller depending on it working or not.
-      self.HAND_LEFT = wpilib.interfaces.GenericHID.Hand.kLeftHand
-      self.HAND_RIGHT = wpilib.interfaces.GenericHID.Hand.kRightHand
       self.rotary_controller = rotary_joystick.RotaryJoystick(ID.OPERATOR_CONTROLLER)
       self.operator_controller = wpilib.interfaces.GenericHID(ID.OPERATOR_CONTROLLER)
       self.drive_controller = wpilib.XboxController(ID.DRIVE_CONTROLLER)
@@ -59,7 +59,6 @@ class MyRobot(wpilib.TimedRobot):
       self._shoot = shoot.Shoot(self._drive, self._shooter)
 
    def teleopInit(self):
-      print(self.driver_station.getAlliance())
       self.frontLeft.setInverted(True)
       self.backLeft.setInverted(True)
       self.frontRight.setInverted(False)
@@ -68,17 +67,20 @@ class MyRobot(wpilib.TimedRobot):
       
    def teleopPeriodic(self):
       try:
-         if self.color_sensor.getIR():
-            if self.color_sensor.getColor()[0] < self.color_sensor.getColor()[2]:
-               self.ball_color = self.BLUE
-            else:
-               self.ball_color = self.RED
-            if self.ball_color == self.alliance_color:
-               print("shoot")
-            else: 
-               print("discard")
-         else:
-            self.ball_color = self.NOBALL
+
+         self.testServo.setAngle(self.drive_controller.getLeftX() * 180 - 90)
+         
+         # if self.color_sensor.getIR():
+         #    if self.color_sensor.getColor()[0] < self.color_sensor.getColor()[2]:
+         #       self.ball_color = self.BLUE
+         #    else:
+         #       self.ball_color = self.RED
+         #    if self.ball_color == self.alliance_color:
+         #       print("shoot")
+         #    else: 
+         #       print("discard")
+         # else:
+         #    self.ball_color = self.NOBALL
 
          # if self.printTimer.hasPeriodPassed(0.5):
          #    print(self._shooter.getCameraInfo())
