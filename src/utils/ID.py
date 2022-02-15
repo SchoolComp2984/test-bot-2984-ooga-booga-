@@ -6,9 +6,6 @@ DRIVE_RIGHT_BACK = 2
 DRIVE_LEFT_FRONT = 3
 DRIVE_LEFT_BACK = 4
 
-#This number is not known yet
-SHOOTER = 5
-
 #PWM Items
 
 #DIO Items
